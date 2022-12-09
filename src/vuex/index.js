@@ -1,15 +1,27 @@
-import install, { Vue } from './install'
+// import install, { Vue } from './install'
 import ModuleCollection from './module/module-collection'
 import { forEachValue } from './util'
-console.log('Vue: ', Vue)
-
+let Vue
+const install = (_Vue) => {
+  Vue = _Vue
+  Vue.mixin({
+    beforeCreate() {
+      // 让所有组件都定义一个$store
+      if (this.$options.store) {
+        this.$store = this.$options.store
+      } else if (this.$parent && this.$parent.$store) {
+        this.$store = this.$parent.$store
+      }
+    },
+  })
+}
 function installModule(store, rootState, path, rootModule) {
   if (path.length > 0) {
     let parent = path.slice(0, -1).reduce((start, current) => {
       return start[current]
     }, rootState)
-    debugger
-    Vue.$set(parent, path[path.length - 1], rootModule.state)
+    // debugger
+    Vue.set(parent, path[path.length - 1], rootModule.state)
     // parent[path[path.length - 1]] = rootModule.state
   }
   let namespaced = store._modules.getNamespace(path)
@@ -37,6 +49,7 @@ function installModule(store, rootState, path, rootModule) {
   rootModule.forEachModule((moduleKey, module) => {
     installModule(store, rootState, path.concat(moduleKey), module)
   })
+  // console.log('store: ', store)
 }
 function resetStoreVM(store, state) {
   let oldVm = store._vm
@@ -51,6 +64,7 @@ function resetStoreVM(store, state) {
       },
     })
   })
+  // debugger
   store._vm = new Vue({
     data: {
       $$state: state,
@@ -58,12 +72,12 @@ function resetStoreVM(store, state) {
     computed,
   })
   if (oldVm) {
-    Vue.$nextTick(() => oldVm.$destroy())
+    Vue.nextTick(() => oldVm.$destroy())
   }
 }
 class Store {
   constructor(options) {
-    debugger
+    // debugger
     // 将选项进行格式化
     this._modules = new ModuleCollection(options)
     // console.log(this._modules)
@@ -75,10 +89,13 @@ class Store {
     // 传入的根状态
     const state = this._modules.root.state
     installModule(this, state, [], this._modules.root)
-    // console.log(state)
+    // console.log('state:', state)
     resetStoreVM(this, state)
   }
+  install = install
   commit = (type, payload) => {
+    // debugger
+    console.log(this._modules)
     if (this._mutations[type]) {
       this._mutations[type].forEach((fn) => fn.call(this, payload))
     }
@@ -89,7 +106,9 @@ class Store {
     }
   }
   registerModule(path, module) {
+    if (typeof path === 'string') path = [path]
     // register
+    // debugger
     this._modules.register(path, module)
     installModule(this, this.state, path, module.newModule)
     // computed update
@@ -97,7 +116,7 @@ class Store {
   }
   get state() {
     // debugger
-    return this._vm.$$state
+    return this._vm._data.$$state
   }
 }
 

@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import Vuex from '@/vuex'
+// console.log('Vuex: ', Vuex)
 
 Vue.use(Vuex)
 
@@ -58,6 +59,8 @@ const store = new Vuex.Store({
       },
     },
     c: {
+      namespaced: true,
+      age: 300,
       state: {
         age: 400,
       },
@@ -70,7 +73,7 @@ const store = new Vuex.Store({
   },
 })
 
-store.registerModule(['a', 'd'], {
+store.registerModule(['a', 'e'], {
   namespaced: true,
   state: {
     age: 11200,
@@ -80,7 +83,7 @@ store.registerModule(['a', 'd'], {
   },
   mutations: {
     add(state, payload) {
-      state.age += 'payload'
+      state.age += payload
     },
   },
 })

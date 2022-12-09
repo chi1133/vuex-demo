@@ -10,10 +10,11 @@ export default class ModuleCollections {
     let module = this.root
     return path.reduce((str, key) => {
       module = module.getChild(key)
-      return str + (module.namespaced ? `${key}` : '')
+      return str + (module.namespaced ? `${key}/` : '')
     }, '')
   }
   register(path, rootModule) {
+    // console.log('rootModule: ', rootModule)
     let newModule = new Module(rootModule)
     rootModule.newModule = newModule
     if (this.root === null) {
